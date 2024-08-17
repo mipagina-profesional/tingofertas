@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Productos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #121212; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .container { width: 90%; max-width: 1200px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); background-color: #1E1E1E; }
+        h1 { text-align: center; color: #00d9ff; font-size: 2.5em; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .product-card { display: flex; flex-direction: column; align-items: center; background-color: #2A2A2A; border: 1px solid #333; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .product-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5); }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; cursor: pointer; transition: transform 0.3s ease; }
+        .product-card img:hover { transform: scale(1.1); }
+        .product-card-body { padding: 20px; text-align: center; width: 100%; }
+        .product-card-body h2 { font-size: 1.6em; color: #00d9ff; text-transform: capitalize; font-weight: bold; margin: 10px 0; }
+        .product-card-body p { color: #cccccc; font-size: 1em; line-height: 1.4em; margin: 10px 0; }
+        .product-card-body .price { font-size: 1.5em; color: #76ff03; margin: 20px 0; font-weight: bold; }
+        .btn { margin-top: 15px; padding: 12px 25px; border: none; border-radius: 30px; cursor: pointer; text-decoration: none; font-size: 1em; width: 100%; max-width: 220px; display: flex; align-items: center; justify-content: center; transition: background-color 0.3s ease, transform 0.3s ease; }
+        .btn:hover { transform: scale(1.05); }
+        .add-to-cart-button { background-color: #007bff; color: white; margin-bottom: 10px; }
+        .add-to-cart-button.remove { background-color: #dc3545; }
+        .buy-button { background-color: #00c853; color: white; }
+        .floating-cart-button { position: fixed; bottom: 20px; right: 20px; background-color: #76ff03; color: #1E1E1E; border: none; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); cursor: pointer; font-size: 1.5em; display: none; transition: background-color 0.3s ease, transform 0.3s ease; z-index: 1000; }
+        .floating-cart-button:hover { background-color: #64dd17; transform: scale(1.1); }
+        .modal, .full-screen-image { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000; visibility: hidden; opacity: 0; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .modal.active, .full-screen-image.active { visibility: visible; opacity: 1; }
+        .modal-content { background-color: #333; padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; text-align: center; position: relative; }
+        .modal-content h2 { margin-top: 0; color: #76ff03; font-size: 1.8em; }
+        .modal-content ul { list-style-type: none; padding: 0; margin: 20px 0; }
+        .modal-content ul li { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; font-size: 1.2em; color: #ffffff; }
+        .modal-content ul li .remove-button { background-color: #ff3b30; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1em; }
+        .modal-content .close-button { position: absolute; top: 10px; right: 10px; background: #ff3b30; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2em; }
+        .notification { position: fixed; top: 10px; right: 10px; background-color: #28a745; color: white; padding: 15px 20px; border-radius: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); display: none; align-items: center; z-index: 1000; animation: slideIn 0.5s ease-out, slideOut 0.5s 3s ease-in forwards; }
+        .notification.remove { background-color: #dc3545; }
+        .notification i { margin-right: 10px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+        @media (max-width: 768px) { h1 { font-size: 2em; } .product-card-body h2 { font-size: 1.4em; } .product-card-body .price { font-size: 1.3em; } .floating-cart-button { font-size: 1.2em; width: 50px; height: 50px; } .modal-content { width: 95%; } }
+        .user-icon { position: fixed; top: 20px; right: 20px; background-color: #007bff; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); cursor: pointer; font-size: 1.2em; transition: background-color 0.3s ease; z-index: 1000; }
+        .user-icon:hover { background-color: #0056b3; }
+        .login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .login-modal.active { display: flex; }
+        .login-modal-content { background-color: #333; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; position: relative; }
+        .login-modal-content h2 { color: #76ff03; margin-bottom: 20px; }
+        .login-modal-content input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #444; border-radius: 4px; color: #fff; background-color: #222; }
+        .login-modal-content button { background-color: #007bff; color: white; border: none; border-radius: 4px; padding: 10px 20px; cursor: pointer; font-size: 1em; }
+        .login-modal-content button:hover { background-color: #0056b3; }
+        .login-modal-content .close-button { position: absolute; top: 10px; right: 10px; background: #ff3b30; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Catálogo de Productos</h1>
+    <div id="product-container" class="product-grid"></div>
+</div>
+
+<button id="floating-cart-button" class="floating-cart-button" onclick="toggleCartModal()"><i class="fas fa-shopping-cart"></i></button>
+<button id="user-icon" class="user-icon" onclick="toggleLoginModal()"><i class="fas fa-user"></i></button>
+
+<div id="cart-modal" class="modal">
+    <div class="modal-content">
+        <button class="close-button" onclick="toggleCartModal()">&times;</button>
+        <h2>Carrito de Compras</h2>
+        <ul id="cart-list"></ul>
+        <button class="buy-button" onclick="checkout()">Comprar todo</button>
+    </div>
+</div>
+
+<div id="notification" class="notification"><i class="fas fa-check-circle"></i> Producto agregado al carrito</div>
+<div id="fullscreen" class="full-screen-image" onclick="toggleFullscreen()"><img id="fullscreen-img" src="" alt="Imagen del Producto"></div>
+
+<div id="login-modal" class="login-modal">
+    <div class="login-modal-content">
+        <button class="close-button" onclick="toggleLoginModal()">&times;</button>
+        <h2>Iniciar sesión</h2>
+        <input type="text" id="username" placeholder="Usuario">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="login()">Ingresar</button>
+    </div>
+</div>
+
+<script>
+    const apiEndpoint = 'https://sheetdb.io/api/v1/2w2a1095wr9jk', whatsappNumber = '51961686916';
+    let cart = [];
+
+    const $ = id => document.getElementById(id);
+
+    const loadProducts = async () => {
+        try {
+            const response = await fetch(apiEndpoint);
+            const products = await response.json();
+            products.reverse().forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.classList.add('product-card');
+                productCard.innerHTML = `
+                    <img src="${product["Foto"] || 'https://via.placeholder.com/400'}" onclick="toggleFullscreen(this.src)">
+                    <div class="product-card-body">
+                        <h2>${product["Nombre del producto"]}</h2>
+                        <div class="price">$${product["Precio"]}</div>
+                        <p>${product["Descripción"] || 'Descripción no disponible'}</p>
+                        <button class="btn add-to-cart-button" onclick="toggleCartItem('${product["Nombre del producto"]}', '${product["Precio"]}', this)">
+                            <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                        </button>
+                        <a class="btn buy-button" href="https://wa.me/${whatsappNumber}?text=Hola%2C%20me%20interesa%20el%20producto%20${encodeURIComponent(product["Nombre del producto"])}" target="_blank">
+                            <i class="fas fa-shopping-bag"></i> Comprar ahora
+                        </a>
+                    </div>`;
+                $('product-container').appendChild(productCard);
+            });
+        } catch (error) {
+            console.error('Error al cargar los productos:', error);
+        }
+    };
+
+    const toggleCartItem = (name, price, btn) => {
+        const index = cart.findIndex(item => item.name === name);
+        if (index > -1) {
+            cart.splice(index, 1);
+            btn.classList.remove('remove');
+            btn.innerHTML = '<i class="fas fa-cart-plus"></i> ';
+            showNotification('Producto eliminado del carrito', true);
+        } else {
+            cart.push({ name, price });
+            btn.classList.add('remove');
+            btn.innerHTML = '<i class="fas fa-cart-arrow-down"></i>';
+            showNotification('Producto agregado al carrito');
+        }
+        toggleCartButton();
+        updateCartList();
+    };
+
+    const showNotification = (message, remove = false) => {
+        const notification = $('notification');
+        notification.textContent = message;
+        notification.className = `notification${remove ? ' remove' : ''}`;
+        notification.style.display = 'flex';
+        setTimeout(() => notification.style.display = 'none', 4000);
+    };
+
+    const toggleCartButton = () => $('floating-cart-button').style.display = cart.length > 0 ? 'flex' : 'none';
+
+    const toggleCartModal = () => $('cart-modal').classList.toggle('active');
+
+    const updateCartList = () => {
+        $('cart-list').innerHTML = cart.length ? cart.map((item, index) => `
+            <li>
+                <span>${item.name}</span> - $${item.price}
+                <button class="remove-button" onclick="toggleCartItem('${item.name}', '${item.price}', this.parentElement)"><i class="fas fa-times"></i></button>
+            </li>`).join('') : '<li>El carrito está vacío.</li>';
+    };
+
+    const toggleFullscreen = src => {
+        const fullscreen = $('fullscreen');
+        fullscreen.classList.toggle('active');
+        if (src) $('fullscreen-img').src = src;
+    };
+
+    const checkout = () => window.open(`https://wa.me/${whatsappNumber}?text=Hola%2C%20me%20interesan%20los%20siguientes%20productos%3A%20${encodeURIComponent(cart.map(item => item.name).join(', '))}`, '_blank');
+
+    const toggleLoginModal = () => $('login-modal').classList.toggle('active');
+
+    const login = () => {
+        const username = $('username').value;
+        const password = $('password').value;
+        if (username === 'jhoel' && password === 'jhoel') {
+            window.location.href = 'administrador.html';
+        } else {
+            alert('Usuario o contraseña incorrectos');
+        }
+    };
+
+    loadProducts();
+</script>
+
+</body>
+</html>
