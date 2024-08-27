@@ -10,8 +10,8 @@
         .container { width: 90%; max-width: 1200px; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
         h1 { text-align: center; color: #333; margin-bottom: 20px; font-size: 2em; }
         form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; transition: border-color 0.3s; }
-        input:focus, textarea:focus { border-color: #007bff; outline: none; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus, textarea:focus, select:focus { border-color: #007bff; outline: none; }
         button { padding: 12px 20px; background-color: #28a745; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
         button:hover { background-color: #218838; }
         .loading { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.7); color: #fff; padding: 20px; border-radius: 8px; text-align: center; z-index: 1000; }
@@ -44,6 +44,12 @@
         <input type="number" id="product-price" placeholder="Precio del producto" required>
         <textarea id="product-description" placeholder="Descripción del producto (opcional)" rows="4"></textarea>
         <input type="file" id="product-image" accept="image/*">
+        <select id="product-category" required>
+            <option value="">Selecciona una categoría</option>
+            <option value="tecnologia">Tecnología</option>
+            <option value="juguetes+18">Juguetes +18</option>
+            <option value="accesorios">Accesorios</option>
+        </select>
         <button type="submit">Agregar Producto</button>
     </form>
 
@@ -55,6 +61,7 @@
                 <th>Nombre del Producto</th>
                 <th>Precio</th>
                 <th>Descripción</th>
+                <th>Categoría</th>
                 <th>Imagen</th>
                 <th>Acción</th>
             </tr>
@@ -69,7 +76,7 @@
     const loading = document.getElementById('loading');
     const alertContainer = document.getElementById('alert-container');
     const apiKey = '2da9e334dd37c80356fd67ba937319c3';
-    const sheetDBEndpoint = 'https://sheetdb.io/api/v1/2w2a1095wr9jk';
+    const sheetDBEndpoint = 'https://sheetdb.io/api/v1/fvkkqmo3qbo5n';
 
     const showLoading = () => loading.style.display = 'flex';
     const hideLoading = () => loading.style.display = 'none';
@@ -127,8 +134,9 @@
         const row = tableBody.insertRow(0);
         row.innerHTML = `
             <td>${product["Nombre del producto"]}</td>
-            <td>$${product["Precio"]}</td>
+            <td>s/${product["Precio"]}</td>
             <td>${product["Descripción"]}</td>
+            <td>${product["Categoría"]}</td>
             <td>${product["Foto"] ? `<img src="${product["Foto"]}" class="product-image">` : 'Sin imagen'}</td>
             <td><button class="btn-delete"><i class="fas fa-trash-alt"></i> Eliminar</button></td>
         `;
@@ -158,6 +166,7 @@
             "Nombre del producto": document.getElementById('product-name').value,
             "Precio": document.getElementById('product-price').value,
             "Descripción": document.getElementById('product-description').value || 'N/A',
+            "Categoría": document.getElementById('product-category').value,
             "Foto": (await uploadImage(document.getElementById('product-image').files[0])) || ''
         };
 
